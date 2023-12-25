@@ -1,22 +1,39 @@
+type ChildGifts = {
+  childId: number;
+  gifts: string[];
+};
+
 export class GiftRegistry {
-  private registry: Record<number, string[]> = {};
+  childrenGifts: ChildGifts[] = [];
 
-  addGift(childId: number, gift: string) {
-    if (!this.registry[childId]) {
-        this.registry[childId] = [];
-    }
-    this.registry[childId].push(gift);
+  getGiftsForChild(childId: number): ChildGifts["gifts"] | undefined {
+    return this.childrenGifts.find((child) => child.childId === childId)?.gifts;
   }
 
-  getGiftsForChild(childId: number): string[] {
-    return this.registry[childId] || [];
+  addGift(childId: number, giftName: string): void {
+    const foundChild = this.childrenGifts.find(
+      (child) => child.childId === childId
+    );
+
+    if (!foundChild) {
+      this.childrenGifts.push({
+        childId,
+        gifts: [giftName],
+      });
+    } else {
+      foundChild.gifts.push(giftName);
+    }
   }
 
-  removeGift(childId: number, gift: string) {
-    const gifts = this.registry[childId];
-    if (!gifts || !gifts.includes(gift)) {
-        throw new Error('Gift not found!');
+  removeGift(childId: number, giftName: string): void {
+    const foundChildGifts = this.childrenGifts.find(
+      (child) => child.childId === childId
+    )?.gifts;
+
+    if (!foundChildGifts?.includes(giftName)) {
+      throw new Error("Gift not found");
     }
-    this.registry[childId] = gifts.filter(item => item !== gift);
+
+    foundChildGifts.splice(foundChildGifts.indexOf(giftName), 1);
   }
 }
