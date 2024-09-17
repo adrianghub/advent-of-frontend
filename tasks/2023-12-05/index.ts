@@ -1,23 +1,27 @@
-type Callback = () => void;
-
 export class ChristmasEmitter {
-    private events: Record<string, Callback[]> = {}
+  subscribers: { [key: string]: Array<(event: string) => void> } = {};
 
+  on(event: string, cb: (event: string) => void): void {
+    if (!this.subscribers[event]) {
+      this.subscribers[event] = [];
+    }
+    this.subscribers[event].push(cb);
+  }
 
-    on(event: string, callback: Callback) {
-        this.events[event] = this.events[event] || [];
-        this.events[event].push(callback);
+  off(event: string, cb: (event: string) => void): void {
+    if (!this.subscribers[event]) {
+      return;
+    }
+    this.subscribers[event] = this.subscribers[event].filter(
+      (callback) => callback !== cb
+    );
+  }
+
+  emit(event: string) {
+    if (!this.subscribers[event]) {
+      return;
     }
 
-    off(event: string, callback: Callback) {
-        if (this.events[event]) {
-            this.events[event] = this.events[event].filter(cb => cb !== callback);
-        }
-    }
-
-    emit(event: string) {
-        if (this.events[event]) {
-            this.events[event].forEach(callback => callback());
-        }
-    }
+    this.subscribers[event].forEach((callback) => callback(event));
+  }
 }
